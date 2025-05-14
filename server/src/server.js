@@ -14,7 +14,6 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const http = require("http");
 const socketIo = require("socket.io");
-const mqtt = require("mqtt");
 const rateLimit = require("express-rate-limit");
 const jwt = require("jsonwebtoken");
 
@@ -29,7 +28,7 @@ const { errorHandler } = require("./middleware/error.middleware");
 const { authMiddleware } = require("./middleware/auth.middleware");
 
 // Import services
-const { setupMqttClient } = require("./services/mqtt.service");
+const { setupBluetoothClient } = require("./services/bluetooth.service");
 const { syncService } = require("./services/sync.service");
 
 // Create Express app
@@ -98,19 +97,16 @@ io.on("connection", (socket) => {
   });
 });
 
-// Setup MQTT client for IoT devices
-// Only initialize if MQTT_BROKER_URL is configured
-const mqttClient = process.env.MQTT_BROKER_URL ? setupMqttClient() : null;
+// Setup Bluetooth client for IoT devices
+const bluetoothClient = setupBluetoothClient();
 
-// Add MQTT status endpoint
-if (mqttClient) {
-  app.get("/api/mqtt/status", authMiddleware, (_, res) => {
-    res.json({
-      success: true,
-      data: mqttClient.getStatus(),
-    });
+// Add Bluetooth status endpoint
+app.get("/api/bluetooth/status", authMiddleware, (_, res) => {
+  res.json({
+    success: true,
+    data: bluetoothClient.getStatus(),
   });
-}
+});
 
 // Define routes
 app.use("/api/auth", authRoutes);
@@ -256,15 +252,11 @@ app.get("/api", (_, res) => {
           path: "/api/db/status",
           description: "Get database status",
         },
-        ...(mqttClient
-          ? [
-              {
-                method: "GET",
-                path: "/api/mqtt/status",
-                description: "Get MQTT connection status (requires auth)",
-              },
-            ]
-          : []),
+        {
+          method: "GET",
+          path: "/api/bluetooth/status",
+          description: "Get Bluetooth connection status (requires auth)",
+        },
       ],
     },
   });
@@ -330,10 +322,10 @@ const gracefulShutdown = async () => {
   // Stop the sync service
   syncService.stopSyncJob();
 
-  // Disconnect MQTT client if it exists
-  if (mqttClient && typeof mqttClient.disconnect === "function") {
-    console.log("Disconnecting MQTT client...");
-    mqttClient.disconnect();
+  // Disconnect Bluetooth client
+  if (bluetoothClient && typeof bluetoothClient.disconnect === "function") {
+    console.log("Disconnecting Bluetooth client...");
+    bluetoothClient.disconnect();
   }
 
   // Close server
@@ -360,4 +352,4 @@ const gracefulShutdown = async () => {
 startServer();
 
 // Export for testing
-module.exports = { app, server, io, mqttClient };
+module.exports = { app, server, io, bluetoothClient };
