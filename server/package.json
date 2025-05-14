@@ -1,0 +1,41 @@
+{
+  "name": "physio-app-backend",
+  "version": "1.0.0",
+  "description": "Backend for Physio App",
+  "main": "dist/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "db:init": "node src/config/db-init.js",
+    "seed": "node src/seed/seed.js",
+    "cleanup": "node cleanup.js",
+    "test:mqtt": "node src/test-mqtt.js",
+    "dev:no-mqtt": "cross-env MQTT_BROKER_URL= nodemon src/server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^7.8.7",
+    "mongoose-encryption": "^2.1.2",
+    "morgan": "^1.10.0",
+    "mqtt": "^5.13.0",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.2",
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.17",
+    "@types/jsonwebtoken": "^9.0.1",
+    "@types/node": "^18.15.11",
+    "cross-env": "^7.0.3",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4"
+  }
+}
